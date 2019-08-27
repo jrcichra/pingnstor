@@ -26,9 +26,9 @@ jobs:
         - go build pingnstor.go
       script:
         - ls -lrt
-        - ./pingnstor & 
+        - sudo ./pingnstor & 
         - sleep 120
-        - killall pingnstor
+        - sudo killall pingnstor
         - mysql -u root --execute="select * from pingnstor.pings"   
 env:
   global:
