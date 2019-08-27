@@ -17,10 +17,6 @@ docker buildx use testbuilder
 docker buildx inspect --bootstrap
 # Phase 2 - sign in
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
-# Phase 3 - build a container for all platforms, optional push (only push on actual deploy)
-if [ $1 == "push" ];then
-    docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor --push .
-    docker buildx imagetools inspect jrcichra/pingnstor
-else
-    docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor .
-fi
+# Phase 3 - build a container for all platforms
+docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:$TRAVIS_COMMIT --push .
+docker buildx imagetools inspect jrcichra/pingnstor:$TRAVIS_COMMIT

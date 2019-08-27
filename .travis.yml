@@ -11,7 +11,7 @@ jobs:
       install:
         - bash -x build.sh
       script:
-        - docker run --name pingnstor jrcichra/pingnstor:latest 
+        - docker run --name pingnstor jrcichra/pingnstor:$TRAVIS_COMMIT 
         - sleep 120
         - mysql -u root --execute="select * from pingnstor.pings"   
         - docker kill pingnstor
