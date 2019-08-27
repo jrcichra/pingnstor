@@ -7,7 +7,7 @@ services:
   - mysql
 jobs:
   include:
-    stage: build stuff and test it (docker and nondocker)
+    - stage: build stuff and test it (docker and nondocker)
       before_install:
         - mysql -u root < setup.sql 
       install:
