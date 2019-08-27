@@ -1,6 +1,8 @@
 sudo: required
 dist: bionic
-language: generic
+language: go
+go:
+  - master
 services:
   - mysql
 jobs:
@@ -15,6 +17,18 @@ jobs:
         - sleep 120
         - mysql -u root --execute="select * from pingnstor.pings"   
         - docker kill pingnstor
+    -
+      before_install:
+        - mysql -u root < setup.sql 
+      install:
+        - go get "github.com/go-sql-driver/mysql"
+        - go get "github.com/sparrc/go-ping"
+        - go build pingnstor.go
+      script:
+        - sh pingnstor & 
+        - sleep 120
+        - killall pingnstor
+        - mysql -u root --execute="select * from pingnstor.pings"   
 env:
   global:
     - secure: "jhoz9XmeEOhpboratQBJE0AnzhAlSW6YjR+F1z2jjUXBnO0zZFAf8LMQlYkZHMQMUygeQgyYOS8i+xKelrlhTVVHOqVUdPTxkFtKpTozKsumF2TVHtxdNiGaFM+VVGwM53wjCj6i4hIErxp2oRJW8aIBynJ3MBpVetGKPJB0mAcBfOntJisANsFtK4AuAn6klX+5tY7vOzXriU0S6guuLqCKtDg/Z4SFkx1tWJIhkPVuxIpFXF2taIXoxmShlS0Di3QWUkJgPMXETWp/BWM6kKyalXNA7+lss/9ytDpZFD0WVsHr9GPB1TADX+OMHr/k7/KCWJmNA5jAttg72fjfaeYGCZBQmRkWI0gy3MwQ1EMofm65n1SU/si8ikFnsyNLJwEOmKh5XFMQb+a/9Zq3wNj7/jYb+J/0yjGDsxUKNrKhsx3Pt+mY2wmCD9TvHWvZs0stiY+hGcXCVPgEF6tjceRJUDwxT0AqILVdrup9z0BKq948HUrovKZbmZEgvCKgH0WNR/HYiqflNrODNl7niIMkgXa4R//6SGkEdMz4D7ccS8RjTr/A3srCYk+VVyzZYLXZgOqHX08oKxyyKxPgU/Uu5svupcWh2Yl0a5lV8qRNAXE1jElHD0QKcXKtESUJmxC11i6DSU38kFWfrRnqxL3I27VfbMNrgDSuFQuU8gA="
