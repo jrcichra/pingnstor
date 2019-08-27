@@ -25,7 +25,8 @@ jobs:
         - go get "github.com/sparrc/go-ping"
         - go build pingnstor.go
       script:
-        - sh pingnstor & 
+        - ls -lrt
+        - ./pingnstor & 
         - sleep 120
         - killall pingnstor
         - mysql -u root --execute="select * from pingnstor.pings"   
