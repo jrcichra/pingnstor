@@ -20,7 +20,7 @@ echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-
 # Phase 3 - build a container for all platforms, optional push (only push on actual deploy)
 if [ $1 == "push" ];then
     docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor --push .
+    docker buildx imagetools inspect jrcichra/pingnstor
 else
     docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor .
 fi
-docker buildx imagetools inspect jrcichra/pingnstor
