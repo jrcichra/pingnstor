@@ -6,7 +6,7 @@ COPY pingnstor.go .
 RUN go build pingnstor.go
 FROM alpine:latest
 WORKDIR /
-ENV dsn "root@127.0.0.1/pingnstor"
+ENV dsn "root@tcp(localhost)/pingnstor"
 ENV f sites.txt
 ENV d 60
 RUN apk add --no-cache \

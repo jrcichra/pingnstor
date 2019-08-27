@@ -10,6 +10,7 @@ jobs:
     - stage: build stuff and test it (docker and nondocker)
       before_install:
         - mysql -u root < setup.sql 
+        - mysql -u root -sse "select * from mysql.user\G"
       install:
         - bash -x build.sh
       script:
@@ -20,13 +21,14 @@ jobs:
     -
       before_install:
         - mysql -u root < setup.sql 
+        - mysql -u root -sse "select * from mysql.user\G"
       install:
         - go get "github.com/go-sql-driver/mysql"
         - go get "github.com/sparrc/go-ping"
         - go build pingnstor.go
       script:
         - ls -lrt
-        - sudo ./pingnstor -dsn "root@127.0.0.1/pingnstor" -f sites.txt -d 60 & 
+        - sudo ./pingnstor -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 & 
         - sleep 125
         - sudo killall pingnstor
         - bash -x test.sh   
