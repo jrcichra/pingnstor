@@ -1,4 +1,4 @@
-if[ $(mysql -u root -sse "select count(*) from pingnstor.pings where domain = 'google.com'") -gt 0 ]
+if [ $(mysql -u root -sse "select count(*) from pingnstor.pings where domain = 'google.com'") -gt 0 ]
 then
 return 0
 else
