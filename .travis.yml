@@ -26,7 +26,7 @@ jobs:
         - go build pingnstor.go
       script:
         - ls -lrt
-        - sudo ./pingnstor -dsn "root@localhost/pingnstor" -f sites.txt -d 60 & 
+        - sudo ./pingnstor -dsn "root@127.0.0.1/pingnstor" -f sites.txt -d 60 & 
         - sleep 125
         - sudo killall pingnstor
         - bash -x test.sh   
