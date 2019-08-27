@@ -1,8 +1,6 @@
 sudo: required
 dist: bionic
-language: go
-go:
-  - master
+language: generic
 services:
   - mysql
 jobs:
