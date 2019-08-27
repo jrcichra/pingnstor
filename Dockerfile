@@ -9,5 +9,7 @@ WORKDIR /
 ENV dsn /
 ENV f sites.txt
 ENV d 60
+RUN apk add --no-cache \
+    libc6-compat
 COPY --from=0 /pingnstor .
 CMD ./pingnstor -dsn ${dsn} -f ${f} -d ${d} 
