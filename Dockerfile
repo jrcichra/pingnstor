@@ -10,4 +10,4 @@ ENV dsn /
 ENV f sites.txt
 ENV d 60
 COPY --from=0 /pingnstor .
-CMD ./pingnstor -dsn ${dsn} -f ${f} -d ${d} 
+CMD sh /pingnstor -dsn ${dsn} -f ${f} -d ${d} 
