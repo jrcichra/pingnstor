@@ -2,17 +2,8 @@ name: Go
 on: [push, pull_request]
 jobs:
   build:
-    name: Publish for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            artifact_name: pingnstor
-            asset_name: pingnstor-linux-amd64
-          - os: macos-latest
-            artifact_name: pingnstor
-            asset_name: pingnstor-macos-amd64
+    name: Build
+    runs-on: ubuntu-latest
     steps:
 
     - name: Set up Go 1.12
@@ -34,12 +25,3 @@ jobs:
 
     - name: Build
       run: go build -v .
-    - name: Release
-      uses: svenstaro/upload-release-action@v1-release
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.asset_name }}
-        tag: ${{ github.event.ref }}
-        overwrite: true
-
