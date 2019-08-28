@@ -1,0 +1,38 @@
+sudo: required
+dist: bionic
+language: go
+go:
+  - master
+services:
+  - mysql
+jobs:
+  include:
+    - stage: build stuff and test it (docker and nondocker)
+      before_install:
+        - mysql -u root < setup.sql 
+        - mysql -u root -sse "select * from mysql.user\G"
+      install:
+        - bash -x build.sh
+      script:
+        - docker run --name pingnstor jrcichra/pingnstor:$TRAVIS_COMMIT 
+        - sleep 120
+        - bash -x test.sh  
+        - docker kill pingnstor
+    -
+      before_install:
+        - mysql -u root < setup.sql 
+        - mysql -u root -sse "select * from mysql.user\G"
+      install:
+        - go get "github.com/go-sql-driver/mysql"
+        - go get "github.com/sparrc/go-ping"
+        - go build pingnstor.go
+      script:
+        - ls -lrt
+        - sudo ./pingnstor -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 & 
+        - sleep 125
+        - sudo killall pingnstor
+        - bash -x test.sh   
+env:
+  global:
+    - secure: "jhoz9XmeEOhpboratQBJE0AnzhAlSW6YjR+F1z2jjUXBnO0zZFAf8LMQlYkZHMQMUygeQgyYOS8i+xKelrlhTVVHOqVUdPTxkFtKpTozKsumF2TVHtxdNiGaFM+VVGwM53wjCj6i4hIErxp2oRJW8aIBynJ3MBpVetGKPJB0mAcBfOntJisANsFtK4AuAn6klX+5tY7vOzXriU0S6guuLqCKtDg/Z4SFkx1tWJIhkPVuxIpFXF2taIXoxmShlS0Di3QWUkJgPMXETWp/BWM6kKyalXNA7+lss/9ytDpZFD0WVsHr9GPB1TADX+OMHr/k7/KCWJmNA5jAttg72fjfaeYGCZBQmRkWI0gy3MwQ1EMofm65n1SU/si8ikFnsyNLJwEOmKh5XFMQb+a/9Zq3wNj7/jYb+J/0yjGDsxUKNrKhsx3Pt+mY2wmCD9TvHWvZs0stiY+hGcXCVPgEF6tjceRJUDwxT0AqILVdrup9z0BKq948HUrovKZbmZEgvCKgH0WNR/HYiqflNrODNl7niIMkgXa4R//6SGkEdMz4D7ccS8RjTr/A3srCYk+VVyzZYLXZgOqHX08oKxyyKxPgU/Uu5svupcWh2Yl0a5lV8qRNAXE1jElHD0QKcXKtESUJmxC11i6DSU38kFWfrRnqxL3I27VfbMNrgDSuFQuU8gA="
+    - secure: "BIcL/VouUe1C8AuuZLFXdEVvELpSGGkq3pj1GrIEuOm5tgwv8ZAtizrHaMEHdMFcOWwuDzbvYyY4INfl8nhLq9uAwx1LuIwmGa91AMavtCf3ROpZ/FEkH0glHRQjGkq4oyHqNdTkpv/qx3aKA49PHZ7yfgDWivwqmKi33YNsihlkCku5ZheMpAcrCf/nw3K0+cHmTbKMT8GYBx4RM1aEruEobS5j54FVW+m7TpYEst5aKNdqKwExVHUA9tLIYFhJoOFpR1F3dWDm4p3S1KrOmvcwTuTSy3HY0zHdXOO3aXMbO7Mf+DmetUni18MLtN9oEReTS/YDhEfyBa9cB4EbPk3Is7iRPCUUs2NbEZuBELkX2c+8a7KVV9kPgkzXidQYtLImvrra3lQXuVPd1WahXAyAr9RzGM4QYdrxzNehN7IVo/fyWpvu0RwuY7GDOIAkVu+qzHC+xYnpRo5XFtqZ8OzrVGiS2hVp79unmpI0pGordgq2josBS6Bq2XgahPVnQa7ME0vs7eUrEls5hCkMl2oYtE2eLo3QJzu2Hc0Eq6SGLXrOa9nQ/2heCuiHRc1yYZxK6fDSNz81VAWId4hYeRQTAMAdDhOBD6EHUHc8rwPPZyWm4R+F9DhcFNqR45PIt218lTmDo8ba+oG/8SQ3O7oJ6Yhk82/KxpUQZZ177Dg="
