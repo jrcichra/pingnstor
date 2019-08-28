@@ -8,8 +8,9 @@ jobs:
   - stage: build stuff and test it (docker and nondocker)
     if: tag IS blank
     install:
-    - bash -x build.sh
+    - bash -x container-build.sh
     script:
+    - docker network create test-net
     - docker run --name mysql --network=test-net -e MYSQL_ROOT_PASSWORD=test -d mysql:8.0.17
     - docker exec mysql mysql -uroot -ptest -e "$(setup.sql)"
     - docker run --name --network=test-net pingnstor jrcichra/pingnstor:$TRAVIS_COMMIT
@@ -26,20 +27,19 @@ jobs:
     - go version
     - mysql -u root < setup.sql
     install:
-    - go get "github.com/go-sql-driver/mysql"
-    - go get "github.com/sparrc/go-ping"
-    - go build pingnstor.go
+    - bash -x go-build.sh
     script:
     - ls -lrt
-    - sudo ./pingnstor -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 &
+    - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 &
     - sleep 125
-    - sudo killall pingnstor
+    - sudo killall pingnstor-linux-amd64
     - bash -x test.sh
     deploy:
       provider: releases
       api_key:
         secure: wActbC7zA/7910Swn2SWWnKdPjVS1UFnWRNkW+RbBV2ZWJog82hiF1qDQ0rbl6kdMCa6qFssHVekJipwGUH1pVOd8G3vNQRt7r0w3wWSoAZ1WgMKAx41yJumEVYg/PwOgCACf+7YhQOgf15bwuICii47n/deI9WZEoSsi7VNoY8usZB5KwvHYN5msAma4segE4vi5JEiMdFhaEnTRAQwryYh106zebc/XatU8MujrUvD90yUAt65Q6g+R1qfcwT3ge7CmM0yNP9Ewc4lfkQVO9/4gZNmbwyKjcOf0M52zR6gy0EzBlGTaMczWP2T1VIqtUOJLmc6vaaPeGxHhG3TjabC67qotca9PqGGOeH7eKesu/6S3JeyOFmTOvqi0KIqpOuGHXXu9+yQUQnTpRuFGrB06niC6SRT+SlnZsfQB9KTD0QyIn9kDHwZlPis99i/ILlVxxmPVXUBQ0aN1yFd/RdT2Ak5Kfya8mAPb8cP09xxXex5b7J+DXUQHxln7Ae+c8+LpLz6fsLb5rPxiGPp+5Ip7y+jlShtrjSUEPsFmjMCnb0AwTcjUK5R2gOdjKrQ7GAvdOtI44kf5HbRPjbh463mEnlqYCKWSN6VrDA2t5afY5Ffiw7rIAx+KQIPV8M7mfTp7KPphD6RgmKnz4AcvYPxQquDTyBNGRTfYpKKvS4=
-      file: pingnstor
+      file_glob: true
+      file: builds/*
       skip_cleanup: true
       on:
         repo: jrcichra/pingnstor
