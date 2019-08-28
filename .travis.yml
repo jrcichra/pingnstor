@@ -7,6 +7,8 @@ jobs:
   include:
   - stage: build stuff and test it (docker and nondocker)
     if: tag IS blank
+    before_install:
+    - mysql -u root < setup.sql
     install:
     - bash -x container-build.sh
     script:
