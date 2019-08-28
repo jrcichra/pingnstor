@@ -40,6 +40,7 @@ jobs:
       file_glob: true
       file: builds/*
       skip_cleanup: true
+      draft: true
       on:
         repo: jrcichra/pingnstor
 env:
