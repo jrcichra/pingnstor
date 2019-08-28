@@ -27,6 +27,7 @@ jobs:
     - go version
     - mysql -u root < setup.sql
     install:
+    - go get ./...
     - bash -x go-build.sh
     script:
     - ls -lrt
