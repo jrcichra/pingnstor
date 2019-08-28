@@ -1,6 +1,7 @@
 FROM golang:latest
 WORKDIR /
-RUN go get ./...
+RUN go get "github.com/go-sql-driver/mysql"
+RUN go get "github.com/sparrc/go-ping"
 COPY pingnstor.go .
 RUN go build pingnstor.go
 FROM alpine:latest
