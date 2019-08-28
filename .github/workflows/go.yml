@@ -25,3 +25,7 @@ jobs:
 
     - name: Build
       run: go build -v .
+    - name: Run
+      run: sudo ./pingnstor
+    - name: Test
+      run: bash -x test.sh
