@@ -32,7 +32,7 @@ jobs:
     - go get "github.com/sparrc/go-ping"
     - bash -x go-build.sh
     script:
-    - ls -lrt
+    - ls -lrt builds/
     - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 &
     - sleep 125
     - sudo killall pingnstor-linux-amd64
