@@ -5,17 +5,17 @@ services:
 - mysql
 jobs:
   include:
-  - stage: build stuff and test it (docker and nondocker)
-    if: tag IS blank
-    before_install:
-    - mysql -u root < setup.sql
-    install:
-    - bash -x container-build.sh
-    script:
-    - bash -x container-test.sh
-    after_success:
-    - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:latest --push .
-  - 
+  - stage: build, test, and deploy
+  #   if: tag IS blank
+  #   before_install:
+  #   - mysql -u root < setup.sql
+  #   install:
+  #   - bash -x container-build.sh
+  #   script:
+  #   - bash -x container-test.sh
+  #   after_success:
+  #   - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:latest --push .
+  # - 
     if: tag IS blank
     before_install:
     - sudo apt-get update
