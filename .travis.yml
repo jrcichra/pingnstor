@@ -15,7 +15,7 @@ jobs:
     - sleep 120
     - bash -x test.sh
     - docker kill pingnstor
-    deploy:
+    after_success:
     - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:latest --push .
   - 
     before_install:
@@ -40,7 +40,6 @@ jobs:
       file: pingnstor
       skip_cleanup: true
       on:
-        tags: true
         repo: jrcichra/pingnstor
 env:
   global:
