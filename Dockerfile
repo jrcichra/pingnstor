@@ -12,4 +12,5 @@ ENV d 60
 RUN apk add --no-cache \
     libc6-compat
 COPY --from=0 /pingnstor .
+COPY sites.txt .
 CMD ./pingnstor -dsn ${dsn} -f ${f} -d ${d} 
