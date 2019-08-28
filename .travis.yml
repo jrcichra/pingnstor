@@ -7,12 +7,12 @@ jobs:
   include:
   - stage: build stuff and test it (docker and nondocker)
     if: tag IS blank
-    before_install:
-    - mysql -u root < setup.sql
     install:
     - bash -x build.sh
     script:
-    - docker run --name pingnstor jrcichra/pingnstor:$TRAVIS_COMMIT
+    - docker run --name mysql --network=test-net -e MYSQL_ROOT_PASSWORD=test -d mysql:8.0.17
+    - docker exec mysql mysql -uroot -ptest -e "$(setup.sql)"
+    - docker run --name --network=test-net pingnstor jrcichra/pingnstor:$TRAVIS_COMMIT
     - sleep 120
     - bash -x test.sh
     - docker kill pingnstor
