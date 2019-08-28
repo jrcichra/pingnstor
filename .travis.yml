@@ -10,7 +10,7 @@ jobs:
     install:
     - bash -x container-build.sh
     script:
-    - bash -x test.sh
+    - bash -x container-test.sh
     after_success:
     - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:latest --push .
   - 
@@ -30,7 +30,7 @@ jobs:
     - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 &
     - sleep 125
     - sudo killall pingnstor-linux-amd64
-    - bash -x test.sh
+    - bash -x go-test.sh
     deploy:
       provider: releases
       api_key:
