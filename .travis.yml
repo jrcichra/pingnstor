@@ -10,13 +10,7 @@ jobs:
     install:
     - bash -x container-build.sh
     script:
-    - docker network create test-net
-    - docker run --name mysql --network=test-net -e MYSQL_ROOT_PASSWORD=test -d mysql:8.0.17
-    - docker exec mysql mysql -uroot -ptest -e "$(cat setup.sql)"
-    - docker run --name --network=test-net pingnstor jrcichra/pingnstor:$TRAVIS_COMMIT
-    - sleep 120
     - bash -x test.sh
-    - docker kill pingnstor
     after_success:
     - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:latest --push .
   - 
