@@ -1,4 +1,4 @@
-package="pingnstor.go"
+package="pingnstor"
 package_split=(${package//\// })
 package_name=${package_split[-1]}
 platforms=("windows/amd64" "windows/386" "linux/amd64" "linux/arm" "linux/arm64")
@@ -14,7 +14,7 @@ do
         output_name+='.exe'
     fi
 
-    env GOOS=$GOOS GOARCH=$GOARCH go build -o builds/$output_name $package
+    env GOOS=$GOOS GOARCH=$GOARCH go build -o builds/$output_name ${package}.go
 
     if [ $? -ne 0 ]; then
         echo 'An error has occurred! Aborting the script execution…'
