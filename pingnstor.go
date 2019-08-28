@@ -39,7 +39,7 @@ func p(site string, c chan pResp, delay int64) {
 		//fmt.Printf("PING %s (%s):\n", pinger.Addr(), pinger.IPAddr())
 		pinger.Count = 1
 		pinger.Run()
-		fmt.Println("I am", site, "and I should be delaying for", delay, "seconds")
+		fmt.Println("I am pinging", site, "and should be delaying for", delay, "seconds")
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
 }
