@@ -110,11 +110,14 @@ func main() {
 
 	}
 	//loop through every response and process the input for the DB
+
+	// prepare the query outside the loop
+	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?")
+
 	for {
 		//wait for a result from a pinger
 		r := <-dbChan
-		// prepare the query
-		stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?")
+
 		if err != nil {
 			log.Fatal(err)
 		}
