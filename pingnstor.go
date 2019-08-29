@@ -1,16 +1,17 @@
 package main
 
 import (
-	"bufio"
 	"database/sql"
 	"flag"
 	"fmt"
 	"log"
-	"os"
 	"time"
+
+	"io/ioutil"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sparrc/go-ping"
+	"gopkg.in/yaml.v2"
 )
 
 type pResp struct {
@@ -48,7 +49,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 	}
 }
 
-func sleeper(sleepChan chan bool, delay int64) {
+func sleeper(sleepChan chan bool, delay int) {
 	for {
 		//ping upon startup, move after sleep if you want a delay first
 		sleepChan <- true
@@ -60,10 +61,22 @@ func sleeper(sleepChan chan bool, delay int64) {
 func main() {
 	//get flags
 	dsn := flag.String("dsn", "", "The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name")
-	filename := flag.String("f", "sites.txt", "Newline separated list of domains to ping")
-	delay := flag.Int64("d", 60, "delay (in seconds) between all pings (pings happen independently of each other and will go out of sync)")
+	filename := flag.String("f", "config.yml", "YAML configuration file")
 
 	flag.Parse()
+
+	//open the config file
+	config, err := ioutil.ReadFile(*filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//make a map
+	configMap := make(map[string]interface{})
+	//parse the config
+	err = yaml.Unmarshal(config, &configMap)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// connect to the database
 	db, err := sql.Open("mysql", *dsn)
@@ -71,22 +84,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Read the file with all the urls you want to ping...
-	file, err := os.Open(*filename)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(file)
+	//spawn things
 
 	//channel that all p's will send back to the main thread on
 	dbChan := make(chan pResp)
-	for scanner.Scan() {
-		//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
-		//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
-		sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
-		go sleeper(sleepChan, *delay)
-		//spawn a pinger with a delay for this
-		go p(dbChan, sleepChan, scanner.Text())
+	for _, domains := range configMap["domains"].([]interface{}) {
+		for domain, params := range domains.(map[interface{}]interface{}) {
+
+			//type assertions
+			delay := params.(map[interface{}]interface{})["delay"].(int)
+			domain := domain.(string)
+
+			//debug prints
+			//fmt.Printf("Domain:%s\n", domain)
+			//fmt.Printf("Delay:%d\n", delay)
+
+			//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
+			//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
+			sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
+			go sleeper(sleepChan, delay)
+			//spawn a pinger with a delay for this
+			go p(dbChan, sleepChan, domain)
+
+		}
+
 	}
 	//loop through every response and process the input for the DB
 	for {

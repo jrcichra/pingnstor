@@ -1,0 +1,7 @@
+domains:
+  - 1.1.1.1:
+      delay: 1
+  - google.com:
+      delay: 5
+  - yahoo.com:
+      delay: 10
