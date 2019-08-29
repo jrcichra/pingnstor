@@ -26,6 +26,7 @@ jobs:
     install:
     - go get "github.com/go-sql-driver/mysql"
     - go get "github.com/sparrc/go-ping"
+    - go get "gopkg.in/yaml.v2"
     - bash -x travis/go-build.sh
     script:
     - ls -lrt builds/
