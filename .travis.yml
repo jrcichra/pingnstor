@@ -39,7 +39,7 @@ jobs:
       api_key:
         secure: wActbC7zA/7910Swn2SWWnKdPjVS1UFnWRNkW+RbBV2ZWJog82hiF1qDQ0rbl6kdMCa6qFssHVekJipwGUH1pVOd8G3vNQRt7r0w3wWSoAZ1WgMKAx41yJumEVYg/PwOgCACf+7YhQOgf15bwuICii47n/deI9WZEoSsi7VNoY8usZB5KwvHYN5msAma4segE4vi5JEiMdFhaEnTRAQwryYh106zebc/XatU8MujrUvD90yUAt65Q6g+R1qfcwT3ge7CmM0yNP9Ewc4lfkQVO9/4gZNmbwyKjcOf0M52zR6gy0EzBlGTaMczWP2T1VIqtUOJLmc6vaaPeGxHhG3TjabC67qotca9PqGGOeH7eKesu/6S3JeyOFmTOvqi0KIqpOuGHXXu9+yQUQnTpRuFGrB06niC6SRT+SlnZsfQB9KTD0QyIn9kDHwZlPis99i/ILlVxxmPVXUBQ0aN1yFd/RdT2Ak5Kfya8mAPb8cP09xxXex5b7J+DXUQHxln7Ae+c8+LpLz6fsLb5rPxiGPp+5Ip7y+jlShtrjSUEPsFmjMCnb0AwTcjUK5R2gOdjKrQ7GAvdOtI44kf5HbRPjbh463mEnlqYCKWSN6VrDA2t5afY5Ffiw7rIAx+KQIPV8M7mfTp7KPphD6RgmKnz4AcvYPxQquDTyBNGRTfYpKKvS4=
       file_glob: true
-      file: travis/builds/*
+      file: builds/*
       skip_cleanup: true
       draft: true
       on:
