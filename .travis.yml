@@ -43,6 +43,7 @@ jobs:
       skip_cleanup: true
       draft: true
       on:
+        branch: master
         repo: jrcichra/pingnstor
 env:
   global:
