@@ -31,7 +31,7 @@ jobs:
     script:
     - ls -lrt builds/
     - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f config.yml  &
-    - sleep 20
+    - sleep 120
     - sudo killall pingnstor-linux-amd64
     - bash -x travis/go-test.sh
     deploy:
