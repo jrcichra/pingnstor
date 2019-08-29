@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-oci8"
 	"github.com/sparrc/go-ping"
 	"gopkg.in/yaml.v2"
 )
@@ -62,8 +63,14 @@ func main() {
 	//get flags
 	dsn := flag.String("dsn", "", "The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name")
 	filename := flag.String("f", "config.yml", "YAML configuration file")
+	vendor := flag.String("v", "mysql", "The Database vendor you want to use: currently supported (mysql,oracle)")
 
 	flag.Parse()
+
+	//validate vendor
+	if *vendor != "oracle" && *vendor != "mysql" {
+		log.Fatal("Bad Vendor")
+	}
 
 	//open the config file
 	config, err := ioutil.ReadFile(*filename)
@@ -79,7 +86,7 @@ func main() {
 	}
 
 	// connect to the database
-	db, err := sql.Open("mysql", *dsn)
+	db, err := sql.Open(*vendor, *dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
