@@ -30,7 +30,7 @@ jobs:
     - bash -x travis/go-build.sh
     script:
     - ls -lrt builds/
-    - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f sites.txt -d 60 &
+    - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f config.yml  &
     - sleep 20
     - sudo killall pingnstor-linux-amd64
     - bash -x travis/go-test.sh
