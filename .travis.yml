@@ -6,16 +6,6 @@ services:
 jobs:
   include:
   - stage: build, test, and deploy
-  #   if: tag IS blank
-  #   before_install:
-  #   - mysql -u root < setup.sql
-  #   install:
-  #   - bash -x container-build.sh
-  #   script:
-  #   - bash -x container-test.sh
-  #   after_success:
-  #   - docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor:latest --push .
-  # - 
     if: tag IS blank
     before_install:
     - sudo apt-get update
@@ -30,14 +20,15 @@ jobs:
     - bash -x travis/go-build.sh
     script:
     - ls -lrt builds/
-    - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f config.yml  &
+    - sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f
+      config.yml  &
     - sleep 120
     - sudo killall pingnstor-linux-amd64
     - bash -x travis/go-test.sh
     deploy:
       provider: releases
       api_key:
-        secure: wActbC7zA/7910Swn2SWWnKdPjVS1UFnWRNkW+RbBV2ZWJog82hiF1qDQ0rbl6kdMCa6qFssHVekJipwGUH1pVOd8G3vNQRt7r0w3wWSoAZ1WgMKAx41yJumEVYg/PwOgCACf+7YhQOgf15bwuICii47n/deI9WZEoSsi7VNoY8usZB5KwvHYN5msAma4segE4vi5JEiMdFhaEnTRAQwryYh106zebc/XatU8MujrUvD90yUAt65Q6g+R1qfcwT3ge7CmM0yNP9Ewc4lfkQVO9/4gZNmbwyKjcOf0M52zR6gy0EzBlGTaMczWP2T1VIqtUOJLmc6vaaPeGxHhG3TjabC67qotca9PqGGOeH7eKesu/6S3JeyOFmTOvqi0KIqpOuGHXXu9+yQUQnTpRuFGrB06niC6SRT+SlnZsfQB9KTD0QyIn9kDHwZlPis99i/ILlVxxmPVXUBQ0aN1yFd/RdT2Ak5Kfya8mAPb8cP09xxXex5b7J+DXUQHxln7Ae+c8+LpLz6fsLb5rPxiGPp+5Ip7y+jlShtrjSUEPsFmjMCnb0AwTcjUK5R2gOdjKrQ7GAvdOtI44kf5HbRPjbh463mEnlqYCKWSN6VrDA2t5afY5Ffiw7rIAx+KQIPV8M7mfTp7KPphD6RgmKnz4AcvYPxQquDTyBNGRTfYpKKvS4=
+        secure: aMo2t9jNUyGMMohFaBalRBE7xsq9V15U/2HAdMRMHgKjbq3Xaa5QeDYLxz32nlhKqvwD7zeNE3OcEsjYmRlxrfZ5Tr2XAfOx2NG3YjT4wyj1m8PZ5I5ervgVigyZQepIsRAxlDOjpFIhyHHsQDfvjvw+cI7WzdxLmmNjVrbUHDdNSkSBT+TsTfN77siGpFn/8ZHoqXJMKr3KSz/HOFxZ2zAvaE6vhjv2BMJZx9gqR0FbyriaXAw4lTFxCoqvRDGSVJUyk9Hqc9w/41+2f7FBWE6a3/fOhQvAFrjZXLIsUzA+DVbqgeP2EcFo/Ku/WQmvUOLsVbld50iltjUDT4CLxc5+TtJHtVY5qhQUASbf6wl2BvzqAhhxnpGZKoRjC/HgTSZezNnfBd3ynXx0+nRbvNYyzVn649E6Nnpust3tadSsiaYSSvOLq7NjiBGQLjlXlk6KZtw2Xlm3b5BpM+0fddD0OZqzA5z7gCZasgkNQP7AhKrberPhc43OR6xZtSaOZ/90Bn0Kp8Yb8MdN7kwvSM8rODSRFJ2K6s8tVPkQ3eoewNkdBVH3J4JatqawSqax5UmfJGGMWOpI1f2NtKxBV5L9S4+03GS3+wfw+z2QtC1rlPcfy+GBm9XBGlFUhV/2J/2f57zWV1aikLk4DHdlxLbeVsUKXUAO6KXwK4rmUsg=
       file_glob: true
       file: builds/*
       skip_cleanup: true
@@ -49,4 +40,3 @@ env:
   global:
   - secure: jhoz9XmeEOhpboratQBJE0AnzhAlSW6YjR+F1z2jjUXBnO0zZFAf8LMQlYkZHMQMUygeQgyYOS8i+xKelrlhTVVHOqVUdPTxkFtKpTozKsumF2TVHtxdNiGaFM+VVGwM53wjCj6i4hIErxp2oRJW8aIBynJ3MBpVetGKPJB0mAcBfOntJisANsFtK4AuAn6klX+5tY7vOzXriU0S6guuLqCKtDg/Z4SFkx1tWJIhkPVuxIpFXF2taIXoxmShlS0Di3QWUkJgPMXETWp/BWM6kKyalXNA7+lss/9ytDpZFD0WVsHr9GPB1TADX+OMHr/k7/KCWJmNA5jAttg72fjfaeYGCZBQmRkWI0gy3MwQ1EMofm65n1SU/si8ikFnsyNLJwEOmKh5XFMQb+a/9Zq3wNj7/jYb+J/0yjGDsxUKNrKhsx3Pt+mY2wmCD9TvHWvZs0stiY+hGcXCVPgEF6tjceRJUDwxT0AqILVdrup9z0BKq948HUrovKZbmZEgvCKgH0WNR/HYiqflNrODNl7niIMkgXa4R//6SGkEdMz4D7ccS8RjTr/A3srCYk+VVyzZYLXZgOqHX08oKxyyKxPgU/Uu5svupcWh2Yl0a5lV8qRNAXE1jElHD0QKcXKtESUJmxC11i6DSU38kFWfrRnqxL3I27VfbMNrgDSuFQuU8gA=
   - secure: BIcL/VouUe1C8AuuZLFXdEVvELpSGGkq3pj1GrIEuOm5tgwv8ZAtizrHaMEHdMFcOWwuDzbvYyY4INfl8nhLq9uAwx1LuIwmGa91AMavtCf3ROpZ/FEkH0glHRQjGkq4oyHqNdTkpv/qx3aKA49PHZ7yfgDWivwqmKi33YNsihlkCku5ZheMpAcrCf/nw3K0+cHmTbKMT8GYBx4RM1aEruEobS5j54FVW+m7TpYEst5aKNdqKwExVHUA9tLIYFhJoOFpR1F3dWDm4p3S1KrOmvcwTuTSy3HY0zHdXOO3aXMbO7Mf+DmetUni18MLtN9oEReTS/YDhEfyBa9cB4EbPk3Is7iRPCUUs2NbEZuBELkX2c+8a7KVV9kPgkzXidQYtLImvrra3lQXuVPd1WahXAyAr9RzGM4QYdrxzNehN7IVo/fyWpvu0RwuY7GDOIAkVu+qzHC+xYnpRo5XFtqZ8OzrVGiS2hVp79unmpI0pGordgq2josBS6Bq2XgahPVnQa7ME0vs7eUrEls5hCkMl2oYtE2eLo3QJzu2Hc0Eq6SGLXrOa9nQ/2heCuiHRc1yYZxK6fDSNz81VAWId4hYeRQTAMAdDhOBD6EHUHc8rwPPZyWm4R+F9DhcFNqR45PIt218lTmDo8ba+oG/8SQ3O7oJ6Yhk82/KxpUQZZ177Dg=
-
