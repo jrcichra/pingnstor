@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"flag"
-	"fmt"
 	"log"
 	"time"
 
@@ -28,8 +27,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 		// initalize a pinger
 		pinger, err := ping.NewPinger(site)
 		if err != nil {
-			fmt.Printf("ERROR: %s\n", err.Error())
-			return
+			log.Fatalf("ERROR: %s\n", err.Error())
 		}
 		pinger.SetPrivileged(true)
 
@@ -43,7 +41,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 
 		//ping until our sleeper tells us otherwise
 		pinger.Run()
-		fmt.Println("I am pinging", site)
+		log.Printf("I am pinging", site)
 
 	}
 }
@@ -52,7 +50,7 @@ func sleeper(sleepChan chan bool, delay int) {
 	for {
 		//ping upon startup, move after sleep if you want a delay first
 		sleepChan <- true
-		fmt.Println("Sleeping for", delay, "seconds...")
+		log.Println("Sleeping for", delay, "seconds...")
 		time.Sleep(time.Duration(delay) * time.Second)
 	}
 }
