@@ -21,28 +21,27 @@ type pResp struct {
 
 func p(dbChan chan pResp, sleepChan chan bool, site string) {
 
-	// initalize a pinger
-	pinger, err := ping.NewPinger(site)
-	if err != nil {
-		fmt.Printf("ERROR: %s\n", err.Error())
-		return
-	}
-	pinger.SetPrivileged(true)
-
-	pinger.OnRecv = func(pkt *ping.Packet) {
-
-	}
-	pinger.OnFinish = func(stats *ping.Statistics) {
-		dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
-	}
-	pinger.Count = 1
-
-	//ping until our sleeper tells us otherwise
-
 	done := false
 	for !done {
 		done = !<-sleepChan //let the sleeper decide if we should wait or not on start, the not is for keeping the done logic here sane,
 		//as a true coming over makes more sense than a false to keep going
+		// initalize a pinger
+		pinger, err := ping.NewPinger(site)
+		if err != nil {
+			fmt.Printf("ERROR: %s\n", err.Error())
+			return
+		}
+		pinger.SetPrivileged(true)
+
+		pinger.OnRecv = func(pkt *ping.Packet) {
+
+		}
+		pinger.OnFinish = func(stats *ping.Statistics) {
+			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
+		}
+		pinger.Count = 1
+
+		//ping until our sleeper tells us otherwise
 		pinger.Run()
 		fmt.Println("I am pinging", site)
 
