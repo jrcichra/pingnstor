@@ -22,9 +22,12 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 
 	done := false
 	for !done {
+		log.Println(site, "is now waiting on sleeper")
 		done = !<-sleepChan //let the sleeper decide if we should wait or not on start, the not is for keeping the done logic here sane,
+		log.Println(site, "is done waiting on sleeper")
 		//as a true coming over makes more sense than a false to keep going
 		// initalize a pinger
+		log.Println(site, "is making a new pinger")
 		pinger, err := ping.NewPinger(site)
 		if err != nil {
 			log.Fatalf("ERROR: %s\n", err.Error())
@@ -32,9 +35,10 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 		pinger.SetPrivileged(true)
 
 		pinger.OnRecv = func(pkt *ping.Packet) {
-
+			log.Println(site, "got an onRecv")
 		}
 		pinger.OnFinish = func(stats *ping.Statistics) {
+			log.Println(site, "got an onFinish")
 			log.Println("stats for site", site, ":", stats)
 			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
 		}
@@ -43,16 +47,19 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 		//ping until our sleeper tells us otherwise
 		log.Println("I am pinging", site)
 		pinger.Run()
-
+		log.Println(site, "is done pinging")
 	}
 }
 
-func sleeper(sleepChan chan bool, delay int) {
+func sleeper(sleepChan chan bool, delay int, site string) {
 	for {
 		//ping upon startup, move after sleep if you want a delay first
+		log.Println(site, "'s sleeper is sending a true")
 		sleepChan <- true
-		log.Println("Sleeping for", delay, "seconds...")
+		log.Println(site, "'s sleeper is done sending a true")
+		log.Println(site, "'s sleeper is sleeping for", delay, "seconds...")
 		time.Sleep(time.Duration(delay) * time.Second)
+		log.Println(site, "'s sleeper is done sleeping")
 	}
 }
 
@@ -100,7 +107,7 @@ func main() {
 			//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 			//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 			sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
-			go sleeper(sleepChan, delay)
+			go sleeper(sleepChan, delay, domain)
 			//spawn a pinger with a delay for this
 			go p(dbChan, sleepChan, domain)
 
