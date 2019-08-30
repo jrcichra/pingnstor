@@ -35,13 +35,14 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 
 		}
 		pinger.OnFinish = func(stats *ping.Statistics) {
+			log.Println("stats for site", site, ":", stats)
 			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
 		}
 		pinger.Count = 1
 
 		//ping until our sleeper tells us otherwise
-		pinger.Run()
 		log.Println("I am pinging", site)
+		pinger.Run()
 
 	}
 }
