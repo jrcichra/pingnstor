@@ -41,7 +41,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 
 		//ping until our sleeper tells us otherwise
 		pinger.Run()
-		log.Printf("I am pinging", site)
+		log.Println("I am pinging", site)
 
 	}
 }
