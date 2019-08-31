@@ -43,6 +43,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
 		}
 		pinger.Count = 1
+		pinger.Timeout = time.Duration(2) * time.Second
 
 		//ping until our sleeper tells us otherwise
 		log.Println("I am pinging", site)
