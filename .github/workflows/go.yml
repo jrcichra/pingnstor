@@ -1,0 +1,35 @@
+name: pingnstor
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code
+      uses: actions/checkout@v1
+
+    - name: Set up DB
+      run: |
+        mysql -u root -proot < setup.sql
+    - name: Get dependencies
+      run: |
+        go get "github.com/go-sql-driver/mysql"
+        go get "github.com/sparrc/go-ping"
+        go get "gopkg.in/yaml.v2"
+        bash -x actions/go-build.sh
+    - name: Test
+      run: |
+        ls -lrt builds/
+        sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f
+        config.yml  &
+        sleep 120
+        sudo killall pingnstor-linux-amd64
+        bash -x actions/go-test.sh
