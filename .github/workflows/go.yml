@@ -34,6 +34,7 @@ jobs:
           bash -x actions/go-test.sh
       - name: Release
         uses: softprops/action-gh-release@v0.1.0
+        with:
         files: |
           builds/pingnstor-windows-amd64.exe
           builds/pingnstor-windows-386.exe
