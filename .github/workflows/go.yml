@@ -35,12 +35,12 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v0.1.0
         with:
-        files: |
-          builds/pingnstor-windows-amd64.exe
-          builds/pingnstor-windows-386.exe
-          builds/pingnstor-linux-amd64
-          builds/pingnstor-linux-arm 
-          builds/pingnstor-linux-arm64
-        draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            builds/pingnstor-windows-amd64.exe
+            builds/pingnstor-windows-386.exe
+            builds/pingnstor-linux-amd64
+            builds/pingnstor-linux-arm 
+            builds/pingnstor-linux-arm64
+          draft: true
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
