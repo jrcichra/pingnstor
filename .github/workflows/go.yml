@@ -42,5 +42,5 @@ jobs:
             builds/pingnstor-linux-arm 
             builds/pingnstor-linux-arm64
           draft: true
-          env:
+        env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
