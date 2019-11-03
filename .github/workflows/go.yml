@@ -32,3 +32,10 @@ jobs:
           sleep 120
           sudo killall pingnstor-linux-amd64
           bash -x actions/go-test.sh
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        files: |
+          pingnstor*
+        draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
