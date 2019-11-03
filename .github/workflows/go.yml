@@ -28,7 +28,7 @@ jobs:
       - name: Test
         run: |
           ls -lrt builds/
-          sudo ./builds/pingnstor-linux-amd64 -dsn "root@tcp(localhost)/pingnstor" -f config.yml  &
+          sudo ./builds/pingnstor-linux-amd64 -dsn "root:root@tcp(localhost)/pingnstor" -f config.yml  &
           sleep 120
           sudo killall pingnstor-linux-amd64
           bash -x actions/go-test.sh
