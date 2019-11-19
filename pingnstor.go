@@ -39,8 +39,8 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 			// log.Println(site, "got an onRecv")
 		}
 		pinger.OnFinish = func(stats *ping.Statistics) {
-			log.Println(site, "got an onFinish")
-			log.Println("stats for site", site, ":", stats)
+			// log.Println(site, "got an onFinish")
+			// log.Println("stats for site", site, ":", stats)
 			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
 		}
 		pinger.Count = 1
