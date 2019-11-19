@@ -43,7 +43,6 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 			// log.Println("stats for site", site, ":", stats)
 			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
 		}
-
 		pinger.Count = 1
 		pinger.Timeout = time.Duration(2) * time.Second
 
