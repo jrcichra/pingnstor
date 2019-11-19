@@ -32,6 +32,10 @@ jobs:
           sleep 120
           sudo killall pingnstor-linux-amd64
           bash -x actions/go-test.sh
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
