@@ -30,19 +30,8 @@ jobs:
           sleep 120
           sudo killall pingnstor-linux-amd64
           bash -x actions/go-test.sh
-      - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          files: |
-            builds/pingnstor-windows-amd64.exe
-            builds/pingnstor-windows-386.exe
-            builds/pingnstor-linux-amd64
-            builds/pingnstor-linux-arm 
-            builds/pingnstor-linux-arm64
-          draft: "true"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "builds/*"
+          token: ${{ secrets.GITHUB_TOKEN }}
