@@ -22,20 +22,21 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 
 	done := false
 	for !done {
-		log.Println(site, "is now waiting on sleeper")
+		// log.Println(site, "is now waiting on sleeper")
 		done = !<-sleepChan //let the sleeper decide if we should wait or not on start, the not is for keeping the done logic here sane,
-		log.Println(site, "is done waiting on sleeper")
+		// log.Println(site, "is done waiting on sleeper")
 		//as a true coming over makes more sense than a false to keep going
 		// initalize a pinger
-		log.Println(site, "is making a new pinger")
+		// log.Println(site, "is making a new pinger")
 		pinger, err := ping.NewPinger(site)
 		if err != nil {
-			log.Fatalf("ERROR: %s\n", err.Error())
+			log.Printf("WARN: %s\n", err.Error())
+			continue
 		}
 		pinger.SetPrivileged(true)
 
 		pinger.OnRecv = func(pkt *ping.Packet) {
-			log.Println(site, "got an onRecv")
+			// log.Println(site, "got an onRecv")
 		}
 		pinger.OnFinish = func(stats *ping.Statistics) {
 			log.Println(site, "got an onFinish")
@@ -55,12 +56,12 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 func sleeper(sleepChan chan bool, delay int, site string) {
 	for {
 		//ping upon startup, move after sleep if you want a delay first
-		log.Println(site, "'s sleeper is sending a true")
+		// log.Println(site, "'s sleeper is sending a true")
 		sleepChan <- true
-		log.Println(site, "'s sleeper is done sending a true")
-		log.Println(site, "'s sleeper is sleeping for", delay, "seconds...")
+		// log.Println(site, "'s sleeper is done sending a true")
+		// log.Println(site, "'s sleeper is sleeping for", delay, "seconds...")
 		time.Sleep(time.Duration(delay) * time.Second)
-		log.Println(site, "'s sleeper is done sleeping")
+		// log.Println(site, "'s sleeper is done sleeping")
 	}
 }
 
