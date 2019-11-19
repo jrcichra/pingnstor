@@ -35,4 +35,5 @@ jobs:
         with:
           artifacts: "builds/*"
           draft: "true"
+          tag: "asdf"
           token: ${{ secrets.GITHUB_TOKEN }}
