@@ -1,4 +1,4 @@
-# pingnstor [![Build Status](https://travis-ci.com/jrcichra/pingnstor.svg?branch=master)](https://travis-ci.com/jrcichra/pingnstor)
+# pingnstor ![Actions Status](https://github.com/jrcichra/pingnstor/workflows/pingnstor/badge.svg)
 
 Simple Go program that stores ping data in a database
 
