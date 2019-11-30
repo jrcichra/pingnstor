@@ -126,15 +126,15 @@ func main() {
 		r := <-dbChan
 
 		if err != nil {
-			log.PrintLn(err)
+			log.Println(err)
 		}
 		res, err := stmt.Exec(r.domain, r.rtt.Seconds())
 		if err != nil {
-			log.PrintLn(err)
+			log.Println(err)
 		}
 		_, err = res.RowsAffected()
 		if err != nil {
-			log.PrintLn(err)
+			log.Println(err)
 		}
 
 	}
