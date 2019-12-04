@@ -120,7 +120,7 @@ func main() {
 
 	// prepare the query outside the loop
 	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?")
-	
+
 	for {
 		//wait for a result from a pinger
 		r := <-dbChan
@@ -128,9 +128,9 @@ func main() {
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
-			db, err := sql.Open("mysql", *dsn)
+			db, _ = sql.Open("mysql", *dsn)
 			continue
-			
+
 		}
 		res, err := stmt.Exec(r.domain, r.rtt.Seconds())
 		if err != nil {
