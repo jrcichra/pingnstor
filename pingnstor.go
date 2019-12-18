@@ -135,10 +135,16 @@ func main() {
 		res, err := stmt.Exec(r.domain, r.rtt.Seconds())
 		if err != nil {
 			log.Println(err)
+			//reconnect to the db
+			db, _ = sql.Open("mysql", *dsn)
+			continue
 		}
 		_, err = res.RowsAffected()
 		if err != nil {
 			log.Println(err)
+			//reconnect to the db
+			db, _ = sql.Open("mysql", *dsn)
+			continue
 		}
 
 	}
