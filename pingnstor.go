@@ -66,6 +66,7 @@ func sleeper(sleepChan chan bool, delay int, site string) {
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	//get flags
 	dsn := flag.String("dsn", "", "The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name")
 	filename := flag.String("f", "config.yml", "YAML configuration file")
