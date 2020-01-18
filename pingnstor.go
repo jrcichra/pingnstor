@@ -129,6 +129,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
+			db.Close()
 			db, _ = sql.Open("mysql", *dsn)
 			continue
 
@@ -137,6 +138,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
+			db.Close()
 			db, _ = sql.Open("mysql", *dsn)
 			continue
 		}
@@ -144,6 +146,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
+			db.Close()
 			db, _ = sql.Open("mysql", *dsn)
 			continue
 		}
