@@ -1,4 +1,4 @@
-# pingnstor ![Actions Status](https://github.com/jrcichra/pingnstor/workflows/pingnstor/badge.svg)
+# pingnstor ![Actions Status](https://github.com/jrcichra/pingnstor/workflows/pingnstor/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/jrcichra/pingnstor)](https://goreportcard.com/report/github.com/jrcichra/pingnstor)
 
 Simple Go program that stores ping data in a database
 
