@@ -65,6 +65,32 @@ func sleeper(sleepChan chan bool, delay int, site string) {
 	}
 }
 
+func connectToDB(dsn *string) (*sql.DB, error) {
+	// connect to the database
+	db, err := sql.Open("mysql", *dsn)
+	if err == nil {
+		err = db.Ping()
+	}
+	return db, err
+}
+
+func reconnectToDB(dsn *string) *sql.DB {
+	var err error
+	var db *sql.DB
+	err = nil
+	for err == nil {
+		db, err = connectToDB(dsn)
+		if err != nil {
+			log.Println(err)
+			db.Close()
+			time.Sleep(time.Duration(1) * time.Second)
+			err = nil
+		}
+
+	}
+	return db
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	//get flags
@@ -72,6 +98,11 @@ func main() {
 	filename := flag.String("f", "config.yml", "YAML configuration file")
 
 	flag.Parse()
+
+	db, err := connectToDB(dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	//open the config file
 	config, err := ioutil.ReadFile(*filename)
@@ -82,12 +113,6 @@ func main() {
 	configMap := make(map[string]interface{})
 	//parse the config
 	err = yaml.Unmarshal(config, &configMap)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// connect to the database
-	db, err := sql.Open("mysql", *dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,10 +128,6 @@ func main() {
 			delay := params.(map[interface{}]interface{})["delay"].(int)
 			domain := domain.(string)
 
-			//debug prints
-			//fmt.Printf("Domain:%s\n", domain)
-			//fmt.Printf("Delay:%d\n", delay)
-
 			//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 			//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 			sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
@@ -121,25 +142,23 @@ func main() {
 
 	// prepare the query outside the loop
 	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?")
+	if err != nil {
+		log.Println(err)
+		//reconnect to the db
+		db.Close()
+		db = reconnectToDB(dsn)
+	}
 
 	for {
 		//wait for a result from a pinger
 		r := <-dbChan
 
-		if err != nil {
-			log.Println(err)
-			//reconnect to the db
-			db.Close()
-			db, _ = sql.Open("mysql", *dsn)
-			continue
-
-		}
 		res, err := stmt.Exec(r.domain, r.rtt.Seconds())
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
 			db.Close()
-			db, _ = sql.Open("mysql", *dsn)
+			db = reconnectToDB(dsn)
 			continue
 		}
 		_, err = res.RowsAffected()
@@ -147,7 +166,7 @@ func main() {
 			log.Println(err)
 			//reconnect to the db
 			db.Close()
-			db, _ = sql.Open("mysql", *dsn)
+			db = reconnectToDB(dsn)
 			continue
 		}
 
