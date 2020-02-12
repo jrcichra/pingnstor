@@ -23,6 +23,12 @@ jobs:
       - name: Build
         run: |
           bash -x actions/go-build.sh
+      - name: Build Containers
+        run: |
+          bash -x actions/docker.sh
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
       - name: Test
         run: |
           ls -lrt builds/
