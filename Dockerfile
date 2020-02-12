@@ -13,4 +13,4 @@ COPY --from=builder /app/pingnstor .
 EXPOSE 8080
 
 # Command to run the executable
-ENTRYPOINT ["./pingnstor"] 
+ENTRYPOINT ["/app/pingnstor"] 
