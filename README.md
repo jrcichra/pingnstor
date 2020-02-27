@@ -2,6 +2,11 @@
 
 Simple Go program that stores ping data in a database
 
+## Docker
+```bash
+docker run --name=pingnstor --volume=/home/pi/pingnstor/config.yml:/config.yml --privileged --restart=always --detach=true -t jrcichra/pingnstor -f /config.yml -dsn pingnstor:test@tcp(mariadb)/pingnstor
+```
+
 ## Config
 
 + Look at config.yml for an example config file
