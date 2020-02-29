@@ -142,7 +142,6 @@ func main() {
 			go p(dbChan, sleepChan, domain)
 
 		}
-
 	}
 	//loop through every response and process the input for the DB
 
