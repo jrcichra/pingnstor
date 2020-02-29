@@ -5,5 +5,5 @@ create table pingnstor.pings
 	the_date datetime not null default CURRENT_TIMESTAMP,
 	domain varchar(4000) not null,
 	packet_rtt float,
-	next_hop int
+	next_hop int not null
 )
