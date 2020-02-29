@@ -16,11 +16,12 @@ import (
 )
 
 type pResp struct {
-	domain string
-	rtt    time.Duration
+	domain  string
+	rtt     time.Duration
+	nextHop bool
 }
 
-func p(dbChan chan pResp, sleepChan chan bool, site string) {
+func p(dbChan chan pResp, sleepChan chan bool, site string, nexthop bool) {
 
 	done := false
 	for !done {
@@ -43,7 +44,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 		pinger.OnFinish = func(stats *ping.Statistics) {
 			// log.Println(site, "got an onFinish")
 			// log.Println("stats for site", site, ":", stats)
-			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
+			dbChan <- pResp{domain: site, rtt: stats.MaxRtt, nextHop: nexthop}
 		}
 		pinger.Count = 1
 		pinger.Timeout = time.Duration(2) * time.Second
@@ -136,7 +137,7 @@ func main() {
 			sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
 			go sleeper(sleepChan, delay, domain)
 			//spawn a pinger with a delay for this
-			go p(dbChan, sleepChan, domain)
+			go p(dbChan, sleepChan, domain, false)
 
 		}
 	}
@@ -156,13 +157,13 @@ func main() {
 		sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
 		go sleeper(sleepChan, *nexthop, tr.Hops[2].AddressString())
 		//spawn a pinger with a delay for this
-		go p(dbChan, sleepChan, tr.Hops[2].AddressString())
+		go p(dbChan, sleepChan, tr.Hops[2].AddressString(), true)
 	}
 
 	//loop through every response and process the input for the DB
 
 	// prepare the query outside the loop
-	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?")
+	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?, next_hop = ?")
 	if err != nil {
 		log.Println(err)
 		//reconnect to the db
@@ -177,9 +178,9 @@ func main() {
 		var res sql.Result
 		ns := sql.NullString{}
 		if r.rtt < 0 {
-			res, err = stmt.Exec(r.domain, ns)
+			res, err = stmt.Exec(r.domain, ns, r.nextHop)
 		} else {
-			res, err = stmt.Exec(r.domain, r.rtt.Seconds())
+			res, err = stmt.Exec(r.domain, r.rtt.Seconds(), r.nextHop)
 		}
 		if err != nil {
 			log.Println(err)
