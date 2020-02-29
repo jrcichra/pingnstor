@@ -4,7 +4,7 @@ Simple Go program that stores ping data in a database
 
 ## Docker
 ```bash
-docker run --name=pingnstor --volume=/home/pi/pingnstor/config.yml:/config.yml --privileged --restart=always --detach=true -t jrcichra/pingnstor -f /config.yml -dsn pingnstor:test@tcp(mariadb)/pingnstor
+docker run --name=pingnstor --volume=/home/pi/pingnstor/config.yml:/config.yml --privileged --expose=8080 --restart=always --detach=true --network=host -t jrcichra/pingnstor -f /config.yml -hopint 5 -hopnum 4 -dsn 'pingnstor:test@tcp(mariadb)/pingnstor'
 ```
 
 ## Config
@@ -16,10 +16,13 @@ docker run --name=pingnstor --volume=/home/pi/pingnstor/config.yml:/config.yml -
 ## Help
 
 ```bash
-./pingnstor-windows-amd64.exe -h
-Usage of pingnstor-windows-amd64.exe:
+Usage of ./pingnstor:
   -dsn string
         The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name
   -f string
-        Newline separated list of domains to ping (default is "config.yml")
+        YAML configuration file (default "config.yml")
+  -hopint int
+        Automatically determine the next hop on startup and use this interval
+  -hopnum int
+        Number of the hop you want to ping
 ```
