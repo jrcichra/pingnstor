@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/jrcichra/pingnstor/traceroute"
@@ -180,7 +181,14 @@ func main() {
 		//wait for a result from a pinger
 		r := <-dbChan
 
-		res, err := stmt.Exec(r.domain, r.rtt)
+		var rttStr string
+		if r.rtt < 0 {
+			rttStr = "NULL"
+		} else {
+			rttStr = strconv.Itoa(int(r.rtt))
+		}
+
+		res, err := stmt.Exec(r.domain, rttStr)
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
