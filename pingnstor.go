@@ -99,7 +99,8 @@ func main() {
 	//get flags
 	dsn := flag.String("dsn", "", "The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name")
 	filename := flag.String("f", "config.yml", "YAML configuration file")
-	nexthop := flag.Int("nexthop", 0, "Automatically determine the next hop on startup and use this interval")
+	hopNum := flag.Int("hopnum", 0, "Number of the hop you want to ping")
+	hopInt := flag.Int("hopint", 0, "Automatically determine the next hop on startup and use this interval")
 
 	flag.Parse()
 
@@ -143,21 +144,21 @@ func main() {
 	}
 
 	//if they want their next hop recorded as well, do that here
-	if *nexthop > 0 {
+	if *hopNum > 0 && *hopInt > 0 {
 		to := traceroute.TracerouteOptions{}
 		to.SetRetries(3) //Third times a charm
-		to.SetMaxHops(3) //Should be your modem, then the ISP
+		to.SetMaxHops(*hopInt)
 		tr, err := traceroute.Traceroute("8.8.8.8", &to)
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println(tr.Hops)
+		log.Println("The hops I see: ", tr.Hops)
 		//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 		//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 		sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
-		go sleeper(sleepChan, *nexthop, tr.Hops[2].AddressString())
+		go sleeper(sleepChan, *hopInt, tr.Hops[*hopInt].AddressString())
 		//spawn a pinger with a delay for this
-		go p(dbChan, sleepChan, tr.Hops[2].AddressString(), true)
+		go p(dbChan, sleepChan, tr.Hops[*hopInt].AddressString(), true)
 	}
 
 	//loop through every response and process the input for the DB
