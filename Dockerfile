@@ -1,4 +1,4 @@
-FROM golang:alpine3.7 as builder
+FROM golang:alpine3.11 as builder
 WORKDIR /app
 RUN apk add git g++
 COPY go.mod go.sum ./
@@ -6,7 +6,7 @@ RUN go mod download
 COPY . .
 RUN go build
 
-FROM alpine:3.7
+FROM alpine:3.11
 WORKDIR /app
 COPY --from=builder /app/pingnstor .
 
