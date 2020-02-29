@@ -1,6 +1,6 @@
 FROM golang:alpine3.7 as builder
 WORKDIR /app
-RUN apk add git
+RUN apk add git g++
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
