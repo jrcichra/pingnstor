@@ -144,7 +144,7 @@ func main() {
 	}
 
 	//if they want their next hop recorded as well, do that here
-	if *hopNum > 0 && *hopInt > 0 {
+	if *hopNum >= 0 && *hopInt > 0 {
 		to := traceroute.TracerouteOptions{}
 		to.SetRetries(3) //Third times a charm
 		to.SetMaxHops(*hopInt)
