@@ -15,7 +15,7 @@ import (
 
 type pResp struct {
 	domain string
-	rtt    time.Duration
+	rtt    int64
 }
 
 func p(dbChan chan pResp, sleepChan chan bool, site string) {
@@ -41,7 +41,13 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 		pinger.OnFinish = func(stats *ping.Statistics) {
 			// log.Println(site, "got an onFinish")
 			// log.Println("stats for site", site, ":", stats)
-			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
+			var d int64
+			if stats.PacketLoss > 0 {
+				d = -1
+			} else {
+				d = int64(stats.MaxRtt * time.Second)
+			}
+			dbChan <- pResp{domain: site, rtt: d}
 		}
 		pinger.Count = 1
 		pinger.Timeout = time.Duration(2) * time.Second
@@ -153,7 +159,7 @@ func main() {
 		//wait for a result from a pinger
 		r := <-dbChan
 
-		res, err := stmt.Exec(r.domain, r.rtt.Seconds())
+		res, err := stmt.Exec(r.domain, r.rtt)
 		if err != nil {
 			log.Println(err)
 			//reconnect to the db
