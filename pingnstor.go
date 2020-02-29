@@ -178,7 +178,7 @@ func main() {
 		var err error
 		var res sql.Result
 		ns := sql.NullString{}
-		if r.rtt < 0 {
+		if r.rtt <= 0 {
 			res, err = stmt.Exec(r.domain, ns, r.nextHop)
 		} else {
 			res, err = stmt.Exec(r.domain, r.rtt.Seconds(), r.nextHop)
