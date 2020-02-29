@@ -18,5 +18,5 @@ docker buildx inspect --bootstrap
 # Phase 2 - sign in
 echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin 
 # Phase 3 - build containers
-docker buildx build --platform linux/amd64,linux/arm64,linux/arm/v7 -t jrcichra/pingnstor --push .
+docker buildx build --platform linux/amd64,linux/arm/v7 -t jrcichra/pingnstor --push .
 docker buildx imagetools inspect jrcichra/pingnstor
