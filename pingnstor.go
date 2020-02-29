@@ -17,7 +17,7 @@ import (
 
 type pResp struct {
 	domain string
-	rtt    int64
+	rtt    time.Duration
 }
 
 func p(dbChan chan pResp, sleepChan chan bool, site string) {
@@ -43,13 +43,7 @@ func p(dbChan chan pResp, sleepChan chan bool, site string) {
 		pinger.OnFinish = func(stats *ping.Statistics) {
 			// log.Println(site, "got an onFinish")
 			// log.Println("stats for site", site, ":", stats)
-			var d int64
-			if stats.PacketLoss > 0 {
-				d = -1
-			} else {
-				d = int64(stats.MaxRtt * time.Second)
-			}
-			dbChan <- pResp{domain: site, rtt: d}
+			dbChan <- pResp{domain: site, rtt: stats.MaxRtt}
 		}
 		pinger.Count = 1
 		pinger.Timeout = time.Duration(2) * time.Second
@@ -156,7 +150,7 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println(tr.Hops[2].AddressString())
+		log.Println(tr.Hops)
 		//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 		//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 		sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
@@ -185,7 +179,7 @@ func main() {
 		if r.rtt < 0 {
 			res, err = stmt.Exec(r.domain, ns)
 		} else {
-			res, err = stmt.Exec(r.domain, r.rtt)
+			res, err = stmt.Exec(r.domain, r.rtt.Seconds())
 		}
 		if err != nil {
 			log.Println(err)
