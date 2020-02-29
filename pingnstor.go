@@ -147,7 +147,7 @@ func main() {
 	if *hopNum >= 0 && *hopInt > 0 {
 		to := traceroute.TracerouteOptions{}
 		to.SetRetries(3) //Third times a charm
-		to.SetMaxHops(*hopNum)
+		to.SetMaxHops(*hopNum + 1)
 		tr, err := traceroute.Traceroute("8.8.8.8", &to)
 		if err != nil {
 			log.Println(err)
@@ -156,9 +156,9 @@ func main() {
 		//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 		//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 		sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
-		go sleeper(sleepChan, *hopInt, tr.Hops[*hopNum].AddressString())
+		go sleeper(sleepChan, *hopInt, tr.Hops[*hopNum-1].AddressString())
 		//spawn a pinger with a delay for this
-		go p(dbChan, sleepChan, tr.Hops[*hopNum].AddressString(), true)
+		go p(dbChan, sleepChan, tr.Hops[*hopNum-1].AddressString(), true)
 	}
 
 	//loop through every response and process the input for the DB
