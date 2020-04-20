@@ -50,9 +50,9 @@ func p(dbChan chan pResp, sleepChan chan bool, site string, nexthop bool) {
 		pinger.Timeout = time.Duration(2) * time.Second
 
 		//ping until our sleeper tells us otherwise
-		log.Println("I am pinging", site)
+		// log.Println("I am pinging", site)
 		pinger.Run()
-		log.Println(site, "is done pinging")
+		// log.Println(site, "is done pinging")
 	}
 }
 
