@@ -23,7 +23,7 @@ type pResp struct {
 }
 
 func p(dbChan chan pResp, sleepChan chan bool, refreshChan chan string, site string, nexthop bool) {
-
+	domain := site
 	done := false
 	for !done {
 		done = !<-sleepChan //let the sleeper decide if we should wait or not on start
@@ -47,7 +47,7 @@ func p(dbChan chan pResp, sleepChan chan bool, refreshChan chan string, site str
 		pinger.OnFinish = func(stats *ping.Statistics) {
 			// log.Println(site, "got an onFinish")
 			// log.Println("stats for site", site, ":", stats)
-			dbChan <- pResp{domain: site, rtt: stats.MaxRtt, nextHop: nexthop}
+			dbChan <- pResp{domain: domain, rtt: stats.MaxRtt, nextHop: nexthop}
 		}
 		pinger.Count = 1
 		pinger.Timeout = time.Duration(2) * time.Second
