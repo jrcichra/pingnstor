@@ -113,11 +113,13 @@ func reconnectToDB(dsn *string) *sql.DB {
 
 //refresh a domain on a ticker
 func domainRefresh(domain string, refreshChan chan string) {
-	t := time.NewTicker(10 * time.Minute)
-	select {
-	case <-t.C:
-		//Kick off a domain refresh
-		refreshChan <- lookup(domain)
+	for {
+		t := time.NewTicker(10 * time.Minute)
+		select {
+		case <-t.C:
+			//Kick off a domain refresh
+			refreshChan <- lookup(domain)
+		}
 	}
 }
 
