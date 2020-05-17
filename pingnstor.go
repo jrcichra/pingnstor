@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	"log"
+	"net"
 	"time"
 
 	"github.com/jrcichra/pingnstor/traceroute"
@@ -21,16 +22,18 @@ type pResp struct {
 	nextHop bool
 }
 
-func p(dbChan chan pResp, sleepChan chan bool, site string, nexthop bool) {
+func p(dbChan chan pResp, sleepChan chan bool, refreshChan chan string, site string, nexthop bool) {
 
 	done := false
 	for !done {
-		// log.Println(site, "is now waiting on sleeper")
-		done = !<-sleepChan //let the sleeper decide if we should wait or not on start, the not is for keeping the done logic here sane,
-		// log.Println(site, "is done waiting on sleeper")
-		//as a true coming over makes more sense than a false to keep going
+		done = !<-sleepChan //let the sleeper decide if we should wait or not on start
+		//see if we should update our site, if the channel is empty, do nothing
+		select {
+		case d := <-refreshChan:
+			site = d
+		default:
+		}
 		// initalize a pinger
-		// log.Println(site, "is making a new pinger")
 		pinger, err := ping.NewPinger(site)
 		if err != nil {
 			log.Printf("WARN: %s\n", err.Error())
@@ -56,7 +59,21 @@ func p(dbChan chan pResp, sleepChan chan bool, site string, nexthop bool) {
 	}
 }
 
-func sleeper(sleepChan chan bool, delay int, site string) {
+//lookup a domain and return the ip
+func lookup(domain string) string {
+	ret := ""
+	addrs, err := net.LookupHost(domain)
+	if err != nil {
+		log.Println(err)
+	} else if len(addrs) < 1 {
+		log.Println(domain + " doesn't resolve!!! is DNS broken?")
+	} else {
+		ret = addrs[0]
+	}
+	return ret
+}
+
+func sleeper(sleepChan chan bool, delay int) {
 	for {
 		//ping upon startup, move after sleep if you want a delay first
 		// log.Println(site, "'s sleeper is sending a true")
@@ -92,6 +109,16 @@ func reconnectToDB(dsn *string) *sql.DB {
 
 	}
 	return db
+}
+
+//refresh a domain on a ticker
+func domainRefresh(domain string, refreshChan chan string) {
+	t := time.NewTicker(10 * time.Minute)
+	select {
+	case <-t.C:
+		//Kick off a domain refresh
+		refreshChan <- lookup(domain)
+	}
 }
 
 func main() {
@@ -136,9 +163,12 @@ func main() {
 			//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 			//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 			sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
-			go sleeper(sleepChan, delay, domain)
+			go sleeper(sleepChan, delay)
+			//spawn a domain refresher that will occassionally do a DNS lookup for long running pingnstors
+			refreshChan := make(chan string)
+			go domainRefresh(domain, refreshChan)
 			//spawn a pinger with a delay for this
-			go p(dbChan, sleepChan, domain, false)
+			go p(dbChan, sleepChan, refreshChan, domain, false)
 
 		}
 	}
@@ -156,9 +186,13 @@ func main() {
 		//spawn a sleeper and a channel which will trigger a pinger to ping, which in turn triggers the DB
 		//giving each pinger its own sleeper allows for per-domain sleeps, and because in go this is easy
 		sleepChan := make(chan bool) //true=keep pinging, false=last ping and die
-		go sleeper(sleepChan, *hopInt, tr.Hops[*hopNum-1].AddressString())
+		go sleeper(sleepChan, *hopInt)
+		//spawn a domain refresher that will occassionally do a DNS lookup for long running pingnstors
+		refreshChan := make(chan string)
+		domain := tr.Hops[*hopNum-1].AddressString()
+		go domainRefresh(domain, refreshChan)
 		//spawn a pinger with a delay for this
-		go p(dbChan, sleepChan, tr.Hops[*hopNum-1].AddressString(), true)
+		go p(dbChan, sleepChan, refreshChan, domain, true)
 	}
 
 	//loop through every response and process the input for the DB
