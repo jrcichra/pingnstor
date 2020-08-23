@@ -66,9 +66,46 @@ func lookup(domain string) string {
 	if err != nil {
 		log.Println(err)
 	} else if len(addrs) < 1 {
-		log.Println(domain + " doesn't resolve!!! is DNS broken?")
-	} else {
+		log.Println(domain, "doesn't resolve!!! is DNS broken or is it a bad hostname?")
+	} else if len(addrs) == 1 {
 		ret = addrs[0]
+	} else {
+		//Loop through all addrs and find one that will ping (aka there might be stale ones)
+		//If none of them ping, set the IP as the first one found
+		next := make(chan bool)
+		foundIndex := 0
+		for index, addr := range addrs {
+			pinger, err := ping.NewPinger(addr)
+			if err != nil {
+				log.Printf("WARN: %s\n", err.Error())
+				continue
+			}
+			pinger.SetPrivileged(true)
+
+			pinger.OnRecv = func(pkt *ping.Packet) {
+			}
+			pinger.OnFinish = func(stats *ping.Statistics) {
+				cont := true
+				if stats.MaxRtt <= 0 {
+					//No ping response, do nothing and continue on
+				} else {
+					//Something is there
+					foundIndex = index
+					cont = false
+				}
+				next <- cont
+			}
+			pinger.Count = 1
+			pinger.Timeout = time.Duration(2) * time.Second
+
+			pinger.Run()
+			//break the loop if we found something before the end
+			if !<-next {
+				break
+			}
+		}
+		ret = addrs[foundIndex]
+
 	}
 	return ret
 }
