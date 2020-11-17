@@ -19,11 +19,6 @@ jobs:
           sudo add-apt-repository "deb [arch=amd64,arm64,ppc64el] http://mariadb.mirror.liquidtelecom.com/repo/10.4/ubuntu $(lsb_release -cs) main"
           sudo apt update && sudo apt -y install mariadb-server
           mysql -u root -proot < setup.sql
-      - name: Get dependencies
-        run: |
-          go get "github.com/go-sql-driver/mysql"
-          go get "github.com/sparrc/go-ping"
-          go get "gopkg.in/yaml.v2"
       - name: Build
         run: |
           bash -x actions/go-build.sh
