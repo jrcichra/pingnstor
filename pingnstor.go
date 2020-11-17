@@ -11,8 +11,8 @@ import (
 
 	"io/ioutil"
 
+	"github.com/go-ping/ping"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/sparrc/go-ping"
 	"gopkg.in/yaml.v2"
 )
 
