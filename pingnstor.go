@@ -131,23 +131,6 @@ func connectToDB(dsn *string) (*sql.DB, error) {
 	return db, err
 }
 
-func reconnectToDB(dsn *string) *sql.DB {
-	var err error
-	var db *sql.DB
-	err = nil
-	for err == nil {
-		db, err = connectToDB(dsn)
-		if err != nil {
-			log.Println(err)
-			db.Close()
-			time.Sleep(time.Duration(1) * time.Second)
-			err = nil
-		}
-
-	}
-	return db
-}
-
 //refresh a domain on a ticker
 func domainRefresh(domain string, refreshChan chan string) {
 	for {
@@ -240,9 +223,6 @@ func main() {
 	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?, next_hop = ?")
 	if err != nil {
 		log.Println(err)
-		//reconnect to the db
-		db.Close()
-		db = reconnectToDB(dsn)
 	}
 
 	for {
@@ -258,17 +238,11 @@ func main() {
 		}
 		if err != nil {
 			log.Println(err)
-			//reconnect to the db
-			db.Close()
-			db = reconnectToDB(dsn)
 			continue
 		}
 		_, err = res.RowsAffected()
 		if err != nil {
 			log.Println(err)
-			//reconnect to the db
-			db.Close()
-			db = reconnectToDB(dsn)
 			continue
 		}
 
