@@ -24,7 +24,7 @@ type pResp struct {
 }
 
 func p(ctx context.Context, dbChan chan pResp, domain string, nexthop bool) error {
-	// initalize a pinger
+	// initialize a pinger
 	pinger, err := ping.NewPinger(domain)
 	if err != nil {
 		return err
