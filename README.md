@@ -6,7 +6,7 @@ Simple Go program that stores ping data in a database
 
 ```bash
 docker run --name=pingnstor --volume=/home/pi/pingnstor/config.yml:/config.yml \
---privileged --expose=8080 --restart=always --detach=true --network=host -t \
+--privileged --restart=unless-stopped -d --network=host -t \
 ghcr.io/jrcichra/pingnstor -f /config.yml -dsn 'pingnstor:test@tcp(mariadb)/pingnstor'
 ```
 
@@ -20,12 +20,16 @@ ghcr.io/jrcichra/pingnstor -f /config.yml -dsn 'pingnstor:test@tcp(mariadb)/ping
 
 ```bash
 Usage of ./pingnstor:
+  -dbtype string
+        database to connect to (default "mysql")
   -dnsRefresh int
         minutes between dns refreshes (default 15)
   -dsn string
-        The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name
+        The connection string for your database
   -f string
         YAML configuration file (default "config.yml")
+  -listen string
+        http metrics/debug server listen address (default ":9103")
 ```
 
 # DSNs
