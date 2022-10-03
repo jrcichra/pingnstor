@@ -11,6 +11,10 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
+	"net/http"
+	_ "net/http/pprof"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -150,6 +154,7 @@ func main() {
 	dbType := flag.String("dbtype", "mysql", "database to connect to")
 	filename := flag.String("f", "config.yml", "YAML configuration file")
 	dnsRefreshMinutes := flag.Int("dnsRefresh", 15, "minutes between dns refreshes")
+	listen := flag.String("listen", ":9103", "http metrics/debug server listen address")
 
 	flag.Parse()
 
@@ -215,6 +220,16 @@ func main() {
 		func(err error) {
 			log.Println(err)
 		})
+
+	// run an http server for debugging memory leaks / performance issues and scrape interal go prometheus metrics
+
+	g.Add(func() error {
+		http.Handle("/metrics", promhttp.Handler())
+		log.Println("Beginning to serve on port " + *listen)
+		return http.ListenAndServe(*listen, nil)
+	}, func(err error) {
+		log.Println(err)
+	})
 
 	if err := g.Run(); err != nil {
 		log.Println("run group ended. exiting...")
