@@ -185,9 +185,11 @@ func main() {
 			delay := params.(map[interface{}]interface{})["delay"].(int)
 			domain := domain.(string)
 			g.Add(func() error {
+				pingTicker := time.NewTicker(time.Duration(delay) * time.Second)
+				defer pingTicker.Stop()
+				dnsTicker := time.NewTicker(time.Duration(*dnsRefreshMinutes) * time.Minute)
+				defer dnsTicker.Stop()
 				for {
-					pingTicker := time.NewTicker(time.Duration(delay) * time.Second)
-					dnsTicker := time.NewTicker(time.Duration(*dnsRefreshMinutes) * time.Minute)
 					select {
 					case <-pingTicker.C:
 						log.Println("running ping for", domain)
