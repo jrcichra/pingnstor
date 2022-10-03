@@ -13,6 +13,7 @@ import (
 	"github.com/go-ping/ping"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"github.com/oklog/run"
 	"gopkg.in/yaml.v2"
 )
@@ -79,40 +80,56 @@ func lookup(domain string) (string, error) {
 	}
 }
 
-func connectToDB(dsn string) (*sql.DB, error) {
+func connectToDB(dbType string, dsn string) (*sql.DB, error) {
 	// connect to the database
-	db, err := sql.Open("mysql", dsn)
-	if err == nil {
-		err = db.Ping()
+	switch dbType {
+	case "mysql", "postgres":
+		db, err := sql.Open(dbType, dsn)
+		if err == nil {
+			err = db.Ping()
+		}
+		return db, err
+	default:
+		return nil, fmt.Errorf("unsupported database: %s", dbType)
 	}
-	return db, err
 }
 
-func database(ctx context.Context, dsn string, data chan pResp) error {
-	db, err := connectToDB(dsn)
+func database(ctx context.Context, dbType string, dsn string, data chan pResp) error {
+	db, err := connectToDB(dbType, dsn)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	// prepare the query outside the loop
-	stmt, err := db.Prepare("insert pings set domain = ?, packet_rtt = ?, next_hop = ?")
+	var prepareStr string
+	switch dbType {
+	case "mysql":
+		prepareStr = "insert pings set domain = ?, packet_rtt = ?, next_hop = ?"
+	case "postgres":
+		prepareStr = "insert into pings (domain, packet_rtt, next_hop) values ($1,$2,$3)"
+	default:
+		return fmt.Errorf("unsupported database: %s", dbType)
+	}
+
+	stmt, err := db.Prepare(prepareStr)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	for {
-		//wait for a result from a pinger
+		// wait for a result from a pinger
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case r := <-data:
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			var err error
 			var res sql.Result
-			ns := sql.NullString{}
 			if r.rtt <= 0 {
-				res, err = stmt.Exec(r.domain, ns, r.nextHop)
+				res, err = stmt.ExecContext(ctx, r.domain, sql.NullString{}, r.nextHop)
 			} else {
-				res, err = stmt.Exec(r.domain, r.rtt.Seconds(), r.nextHop)
+				res, err = stmt.ExecContext(ctx, r.domain, r.rtt.Seconds(), r.nextHop)
 			}
+			cancel()
 			if err != nil {
 				log.Println(err)
 				continue
@@ -129,7 +146,8 @@ func database(ctx context.Context, dsn string, data chan pResp) error {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	//get flags
-	dsn := flag.String("dsn", "", "The connect string for your database - see https://github.com/go-sql-driver/mysql#dsn-data-source-name")
+	dsn := flag.String("dsn", "", "The connection string for your database")
+	dbType := flag.String("dbtype", "mysql", "database to connect to")
 	filename := flag.String("f", "config.yml", "YAML configuration file")
 	dnsRefreshMinutes := flag.Int("dnsRefresh", 15, "minutes between dns refreshes")
 
@@ -192,7 +210,7 @@ func main() {
 	//loop through every response and process the input for the DB
 
 	g.Add(func() error {
-		return database(ctx, *dsn, dbChan)
+		return database(ctx, *dbType, *dsn, dbChan)
 	},
 		func(err error) {
 			log.Println(err)

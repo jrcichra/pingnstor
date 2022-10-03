@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-ping/ping v1.1.0
 	github.com/go-sql-driver/mysql v1.6.0
+	github.com/lib/pq v1.10.7
 	github.com/oklog/run v1.1.0
 	gopkg.in/yaml.v2 v2.4.0
 )

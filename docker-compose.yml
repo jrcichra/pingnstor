@@ -1,9 +1,22 @@
 version: '3.1'
 services:
-  db:
+  mysql:
     image: mariadb
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: test
     ports:
       - 3306:3306
+    volumes:
+      - ./sql/mariadb/:/docker-entrypoint-initdb.d
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: pingnstor
+    ports:
+      - 5432:5432
+    volumes:
+      - ./sql/postgres/:/docker-entrypoint-initdb.d
