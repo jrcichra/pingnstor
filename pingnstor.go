@@ -23,21 +23,21 @@ import (
 )
 
 type pResp struct {
-	domain  string
-	rtt     time.Duration
-	nextHop bool
+	domain    string
+	ipAddress string
+	rtt       time.Duration
 }
 
-func p(ctx context.Context, dbChan chan pResp, domain string, nexthop bool) error {
+func p(ctx context.Context, dbChan chan pResp, domain string, ipAddress string) error {
 	// initialize a pinger
-	pinger, err := ping.NewPinger(domain)
+	pinger, err := ping.NewPinger(ipAddress)
 	if err != nil {
 		return err
 	}
 	pinger.SetPrivileged(true)
 	pinger.OnRecv = func(pkt *ping.Packet) {}
 	pinger.OnFinish = func(stats *ping.Statistics) {
-		dbChan <- pResp{domain: domain, rtt: stats.MaxRtt, nextHop: nexthop}
+		dbChan <- pResp{domain: domain, ipAddress: ipAddress, rtt: stats.MaxRtt}
 	}
 	pinger.Count = 1
 	pinger.Timeout = time.Duration(2) * time.Second
@@ -107,9 +107,9 @@ func database(ctx context.Context, dbType string, dsn string, data chan pResp) e
 	var prepareStr string
 	switch dbType {
 	case "mysql":
-		prepareStr = "insert pings set domain = ?, packet_rtt = ?, next_hop = ?"
+		prepareStr = "insert pings set domain = ?, packet_rtt = ?, ip_address = ?"
 	case "postgres":
-		prepareStr = "insert into pings (domain, packet_rtt, next_hop) values ($1,$2,$3)"
+		prepareStr = "insert into pings (domain, packet_rtt, ip_address) values ($1,$2,$3)"
 	default:
 		return fmt.Errorf("unsupported database: %s", dbType)
 	}
@@ -129,9 +129,9 @@ func database(ctx context.Context, dbType string, dsn string, data chan pResp) e
 			var err error
 			var res sql.Result
 			if r.rtt <= 0 {
-				res, err = stmt.ExecContext(ctx, r.domain, sql.NullString{}, r.nextHop)
+				res, err = stmt.ExecContext(ctx, r.domain, sql.NullString{}, r.ipAddress)
 			} else {
-				res, err = stmt.ExecContext(ctx, r.domain, r.rtt.Seconds(), r.nextHop)
+				res, err = stmt.ExecContext(ctx, r.domain, r.rtt.Seconds(), r.ipAddress)
 			}
 			cancel()
 			if err != nil {
@@ -185,6 +185,10 @@ func main() {
 			delay := params.(map[interface{}]interface{})["delay"].(int)
 			domain := domain.(string)
 			g.Add(func() error {
+				ipAddress, err := lookup(domain)
+				if err != nil {
+					log.Println(err)
+				}
 				pingTicker := time.NewTicker(time.Duration(delay) * time.Second)
 				defer pingTicker.Stop()
 				dnsTicker := time.NewTicker(time.Duration(*dnsRefreshMinutes) * time.Minute)
@@ -193,14 +197,14 @@ func main() {
 					select {
 					case <-pingTicker.C:
 						log.Println("running ping for", domain)
-						err := p(ctx, dbChan, domain, false)
+						err := p(ctx, dbChan, domain, ipAddress)
 						if err != nil {
 							log.Println(err)
 						}
 					case <-dnsTicker.C:
 						var err error
 						log.Println("running lookup for", domain)
-						domain, err = lookup(domain)
+						ipAddress, err = lookup(domain)
 						if err != nil {
 							log.Println(err)
 						}

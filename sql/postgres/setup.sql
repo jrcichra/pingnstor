@@ -4,5 +4,5 @@ create table pings
 	the_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 	domain varchar(4000) not null,
 	packet_rtt float,
-	next_hop boolean not null
+	ip_address varchar(255) not null
 )
