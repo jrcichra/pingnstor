@@ -7,7 +7,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/lib/pq v1.10.7
 	github.com/oklog/run v1.1.0
-	github.com/prometheus/client_golang v1.13.0
+	github.com/prometheus/client_golang v1.13.1
 	gopkg.in/yaml.v2 v2.4.0
 )
 
