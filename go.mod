@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/go-ping/ping v1.1.0
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/lib/pq v1.10.8
 	github.com/oklog/run v1.1.0
 	github.com/prometheus/client_golang v1.15.0
