@@ -185,9 +185,12 @@ func main() {
 			delay := params.(map[interface{}]interface{})["delay"].(int)
 			domain := domain.(string)
 			g.Add(func() error {
-				ipAddress, err := lookup(domain)
+				var ipAddress string
+				potentialIPAddress, err := lookup(domain)
 				if err != nil {
 					log.Println(err)
+				} else {
+					ipAddress = potentialIPAddress
 				}
 				pingTicker := time.NewTicker(time.Duration(delay) * time.Second)
 				defer pingTicker.Stop()
@@ -204,9 +207,11 @@ func main() {
 					case <-dnsTicker.C:
 						var err error
 						log.Println("running lookup for", domain)
-						ipAddress, err = lookup(domain)
+						potentialIPAddress, err := lookup(domain)
 						if err != nil {
 							log.Println(err)
+						} else {
+							ipAddress = potentialIPAddress
 						}
 					case <-ctx.Done():
 						return ctx.Err()
