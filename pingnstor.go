@@ -199,14 +199,14 @@ func main() {
 				for {
 					select {
 					case <-pingTicker.C:
-						log.Println("running ping for", domain)
+						log.Printf("running ping for %s\n", domain)
 						err := p(ctx, dbChan, domain, ipAddress)
 						if err != nil {
-							log.Println(err)
+							log.Printf("error when pinging %s: %v\n", domain, err)
 						}
 					case <-dnsTicker.C:
 						var err error
-						log.Println("running lookup for", domain)
+						log.Printf("running lookup for %s\n", domain)
 						potentialIPAddress, err := lookup(domain)
 						if err != nil {
 							log.Println(err)
@@ -236,7 +236,7 @@ func main() {
 
 	g.Add(func() error {
 		http.Handle("/metrics", promhttp.Handler())
-		log.Println("Beginning to serve on port " + *listen)
+		log.Printf("Beginning to serve on port %s\n", *listen)
 		return http.ListenAndServe(*listen, nil)
 	}, func(err error) {
 		log.Println(err)
