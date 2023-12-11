@@ -93,12 +93,14 @@ func lookup(domain string) (string, error) {
 }
 
 func connectToDB(dbType string, dsn string) (*sql.DB, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	// connect to the database
 	switch dbType {
 	case "mysql", "postgres":
 		db, err := sql.Open(dbType, dsn)
 		if err == nil {
-			err = db.Ping()
+			err = db.PingContext(ctx)
 		}
 		return db, err
 	default:
