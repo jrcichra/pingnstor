@@ -19,13 +19,21 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"github.com/oklog/run"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type pResp struct {
 	domain    string
 	ipAddress string
 	rtt       time.Duration
+}
+
+type ConfigDomain struct {
+	Delay int `yaml:"delay"`
+}
+
+type Config struct {
+	Domains map[string]ConfigDomain `yaml:"domains"`
 }
 
 func p(ctx context.Context, dbChan chan pResp, domain string, ipAddress string) error {
@@ -158,20 +166,17 @@ func main() {
 
 	flag.Parse()
 
-	//open the config file
-	config, err := os.ReadFile(*filename)
+	// open the config file
+	configFile, err := os.ReadFile(*filename)
 	if err != nil {
 		log.Fatal(err)
 	}
-	//make a map
-	configMap := make(map[string]interface{})
-	//parse the config
-	err = yaml.Unmarshal(config, &configMap)
-	if err != nil {
+	// process it
+	var config Config
+	if err := yaml.Unmarshal(configFile, &config); err != nil {
 		log.Fatal(err)
 	}
 
-	//spawn run group
 	var g run.Group
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -179,52 +184,48 @@ func main() {
 
 	//channel that all p's will send back to the main thread on
 	dbChan := make(chan pResp)
-	for _, domains := range configMap["domains"].([]interface{}) {
-		for domain, params := range domains.(map[interface{}]interface{}) {
-			//type assertions
-			delay := params.(map[interface{}]interface{})["delay"].(int)
-			domain := domain.(string)
-			g.Add(func() error {
-				var ipAddress string
-				potentialIPAddress, err := lookup(domain)
-				if err != nil {
-					log.Println(err)
-				} else {
-					ipAddress = potentialIPAddress
-				}
-				pingTicker := time.NewTicker(time.Duration(delay) * time.Second)
-				defer pingTicker.Stop()
-				dnsTicker := time.NewTicker(time.Duration(*dnsRefreshMinutes) * time.Minute)
-				defer dnsTicker.Stop()
-				for {
-					select {
-					case <-pingTicker.C:
-						log.Printf("running ping for %s\n", domain)
-						err := p(ctx, dbChan, domain, ipAddress)
-						if err != nil {
-							log.Printf("error when pinging %s: %v\n", domain, err)
-						}
-					case <-dnsTicker.C:
-						var err error
-						log.Printf("running lookup for %s\n", domain)
-						potentialIPAddress, err := lookup(domain)
-						if err != nil {
-							log.Println(err)
-						} else {
-							ipAddress = potentialIPAddress
-						}
-					case <-ctx.Done():
-						return ctx.Err()
-					}
-				}
-			}, func(err error) {
+	for domain, params := range config.Domains {
+		domain := domain
+		delay := params.Delay
+		g.Add(func() error {
+			var ipAddress string
+			potentialIPAddress, err := lookup(domain)
+			if err != nil {
 				log.Println(err)
-			})
-		}
+			} else {
+				ipAddress = potentialIPAddress
+			}
+			pingTicker := time.NewTicker(time.Duration(delay) * time.Second)
+			defer pingTicker.Stop()
+			dnsTicker := time.NewTicker(time.Duration(*dnsRefreshMinutes) * time.Minute)
+			defer dnsTicker.Stop()
+			for {
+				select {
+				case <-pingTicker.C:
+					log.Printf("running ping for %s\n", domain)
+					err := p(ctx, dbChan, domain, ipAddress)
+					if err != nil {
+						log.Printf("error when pinging %s: %v\n", domain, err)
+					}
+				case <-dnsTicker.C:
+					var err error
+					log.Printf("running lookup for %s\n", domain)
+					potentialIPAddress, err := lookup(domain)
+					if err != nil {
+						log.Println(err)
+					} else {
+						ipAddress = potentialIPAddress
+					}
+				case <-ctx.Done():
+					return ctx.Err()
+				}
+			}
+		}, func(err error) {
+			log.Println(err)
+		})
 	}
 
 	//loop through every response and process the input for the DB
-
 	g.Add(func() error {
 		return database(ctx, *dbType, *dsn, dbChan)
 	},
@@ -232,7 +233,7 @@ func main() {
 			log.Println(err)
 		})
 
-	// run an http server for debugging memory leaks / performance issues and scrape interal go prometheus metrics
+	// run an http server for debugging memory leaks / performance issues and scrape internal go prometheus metrics
 
 	g.Add(func() error {
 		http.Handle("/metrics", promhttp.Handler())
