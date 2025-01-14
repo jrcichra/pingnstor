@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN go build -v
 
-FROM debian:bullseye-20241223-slim
+FROM debian:bullseye-20250113-slim
 WORKDIR /app
 COPY --from=builder /app/pingnstor .
 
