@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/go-ping/ping v1.2.0
 	github.com/go-sql-driver/mysql v1.9.3
-	github.com/lib/pq v1.10.9
+	github.com/lib/pq v1.11.1
 	github.com/oklog/run v1.2.0
 	github.com/prometheus/client_golang v1.23.2
 	gopkg.in/yaml.v3 v3.0.1
