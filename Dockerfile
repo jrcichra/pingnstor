@@ -1,4 +1,4 @@
-FROM golang:1.26.0-bookworm as builder
+FROM golang:1.26.1-bookworm as builder
 WORKDIR /app
 COPY . .
 RUN go build -v
